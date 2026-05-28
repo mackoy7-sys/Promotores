@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance Vendedores — Jan a Mai 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a2332; }
+
+  header {
+    background: linear-gradient(135deg, #0d2b55 0%, #1565c0 100%);
+    color: white; padding: 24px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { font-size: 22px; font-weight: 700; }
+  header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+  .badge { background: rgba(255,255,255,0.15); border-radius: 20px; padding: 6px 14px; font-size: 12px; }
+
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+    padding: 20px 32px 0;
+  }
+  .kpi { background: white; border-radius: 12px; padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07); border-left: 4px solid; }
+  .kpi.elite { border-color: #1565c0; }
+  .kpi.bom { border-color: #2e7d32; }
+  .kpi.dev { border-color: #f57c00; }
+  .kpi.crit { border-color: #c62828; }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #6b7280; font-weight: 600; }
+  .kpi-num { font-size: 28px; font-weight: 800; margin: 4px 0 2px; }
+  .kpi-sub { font-size: 12px; color: #6b7280; }
+  .kpi.elite .kpi-num { color: #1565c0; }
+  .kpi.bom .kpi-num { color: #2e7d32; }
+  .kpi.dev .kpi-num { color: #f57c00; }
+  .kpi.crit .kpi-num { color: #c62828; }
+
+  .section { padding: 20px 32px; }
+  .section h2 { font-size: 16px; font-weight: 700; color: #1a2332; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px; }
+
+  .controls {
+    background: white; border-radius: 12px; padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 16px;
+  }
+  .controls input[type=text] {
+    flex: 1; min-width: 200px; padding: 8px 14px; border: 1.5px solid #e5e7eb;
+    border-radius: 8px; font-size: 13px; outline: none;
+  }
+  .controls input:focus { border-color: #1565c0; }
+  .controls select {
+    padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+    font-size: 13px; background: white; cursor: pointer; outline: none;
+  }
+  .controls select:focus { border-color: #1565c0; }
+  .count-badge { font-size: 12px; color: #6b7280; background: #f3f4f6;
+    padding: 4px 12px; border-radius: 20px; white-space: nowrap; }
+
+  table { width: 100%; border-collapse: collapse; background: white;
+    border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  thead tr { background: #f8fafc; }
+  th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px; color: #6b7280;
+    border-bottom: 1.5px solid #e5e7eb; cursor: pointer; user-select: none; }
+  th:hover { color: #1565c0; }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+  tr:hover td { background: #f0f7ff; }
+  tr:last-child td { border-bottom: none; }
+
+  .rank-badge { display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%; font-size: 11px; font-weight: 800; }
+  .rank-gold { background: #fef08a; color: #854d0e; }
+  .rank-silver { background: #e5e7eb; color: #374151; }
+  .rank-bronze { background: #fed7aa; color: #9a3412; }
+  .rank-normal { background: #f3f4f6; color: #6b7280; }
+
+  .q-chip { display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; }
+  .q-elite { background: #dbeafe; color: #1d4ed8; }
+  .q-bom { background: #dcfce7; color: #166534; }
+  .q-dev { background: #ffedd5; color: #9a3412; }
+  .q-crit { background: #fee2e2; color: #991b1b; }
+
+  .bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; min-width: 60px; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-val { font-size: 12px; font-weight: 600; min-width: 36px; text-align: right; }
+
+  .quartis-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;
+  }
+  .quartil-card { background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07); border-top: 4px solid; }
+  .quartil-card.elite { border-color: #1565c0; }
+  .quartil-card.bom { border-color: #2e7d32; }
+  .quartil-card.dev { border-color: #f57c00; }
+  .quartil-card.crit { border-color: #c62828; }
+  .qc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .qc-title { font-size: 15px; font-weight: 800; }
+  .qc-count { font-size: 24px; font-weight: 800; }
+  .qc-count-label { font-size: 11px; color: #6b7280; }
+  .qc-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .qc-stat { background: #f8fafc; border-radius: 8px; padding: 10px; text-align: center; }
+  .qc-stat-val { font-size: 18px; font-weight: 800; }
+  .qc-stat-lbl { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; }
+
+  .quartil-card.elite .qc-stat-val { color: #1565c0; }
+  .quartil-card.bom .qc-stat-val { color: #2e7d32; }
+  .quartil-card.dev .qc-stat-val { color: #f57c00; }
+  .quartil-card.crit .qc-stat-val { color: #c62828; }
+
+  footer { text-align: center; padding: 20px; font-size: 11px; color: #9ca3af; }
+  .sort-icon { opacity: 0.4; }
+  .sort-active { color: #1565c0 !important; }
+  .sort-active .sort-icon { opacity: 1; }
+
+  .tab-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1.5px solid #e5e7eb; background: white; color: #6b7280; }
+  .tab.active { background: #1565c0; color: white; border-color: #1565c0; }
+
+  .pag { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 14px; }
+  .pag button { padding: 6px 14px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+    background: white; cursor: pointer; font-size: 13px; }
+  .pag button:disabled { opacity: 0.4; cursor: default; }
+  .pag button.active { background: #1565c0; color: white; border-color: #1565c0; }
+  .pag-info { font-size: 12px; color: #6b7280; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Performance de Vendedores — Jan a Mai 2026</h1>
+    <p>Planilha2 (2) · 194 promotores ativos · Score composto: Vidas 50% | Conv% 30% | Leads 20%</p>
+  </div>
+  <div class="badge">Hapvida</div>
+</header>
+
+<div class="kpi-row">
+  <div class="kpi elite">
+    <div class="kpi-label">🏆 Q1 — Elite</div>
+    <div class="kpi-num">49</div>
+    <div class="kpi-sub">Ø 414 vidas · Ø 14,7% conv.</div>
+  </div>
+  <div class="kpi bom">
+    <div class="kpi-label">✅ Q2 — Bom</div>
+    <div class="kpi-num">48</div>
+    <div class="kpi-sub">Ø 224 vidas · Ø 7,9% conv.</div>
+  </div>
+  <div class="kpi dev">
+    <div class="kpi-label">📈 Q3 — Em Desenvolvimento</div>
+    <div class="kpi-num">48</div>
+    <div class="kpi-sub">Ø 127 vidas · Ø 6,0% conv.</div>
+  </div>
+  <div class="kpi crit">
+    <div class="kpi-label">⚠️ Q4 — Crítico</div>
+    <div class="kpi-num">49</div>
+    <div class="kpi-sub">Ø 27 vidas · Ø 3,4% conv.</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📐 Visão por Quartil</h2>
+  <div class="quartis-grid">
+    <div class="quartil-card elite">
+      <div class="qc-header">
+        <div>
+          <div class="qc-title" style="color:#1565c0">🏆 Q1 — Elite</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px">Score ≥ 0,300</div>
+        </div>
+        <div style="text-align:right">
+          <div class="qc-count" style="color:#1565c0">49</div>
+          <div class="qc-count-label">vendedores</div>
+        </div>
+      </div>
+      <div class="qc-stats">
+        <div class="qc-stat"><div class="qc-stat-val">414</div><div class="qc-stat-lbl">Ø Vidas</div></div>
+        <div class="qc-stat"><div class="qc-stat-val">14,7%</div><div class="qc-stat-lbl">Ø Conv.</div></div>
+        <div class="qc-stat"><div class="qc-stat-val">5.168</div><div class="qc-stat-lbl">Ø Leads</div></div>
+      </div>
+    </div>
+    <div class="quartil-card bom">
+      <div class="qc-header">
+        <div>
+          <div class="qc-title" style="color:#2e7d32">✅ Q2 — Bom</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px">Score 0,193 – 0,300</div>
+        </div>
+        <div style="text-align:right">
+          <div class="qc-count" style="color:#2e7d32">48</div>
+          <div class="qc-count-label">vendedores</div>
+        </div>
+      </div>
+      <div class="qc-stats">
+        <div class="qc-stat"><div class="qc-stat-val">224</div><div class="qc-stat-lbl">Ø Vidas</div></div>
+        <div class="qc-stat"><div class="qc-stat-val">7,9%</div><div class="qc-stat-lbl">Ø Conv.</div></div>
+        <div class="qc-stat"><div class="qc-stat-val">3.622</div><div class="qc-stat-lbl">Ø Leads</div></div>
+      </div>
+    </div>
+    <div class="quartil-card dev">
+      <div class="qc-header">
+        <div>
+          <div class="qc-title" style="color:#f57c00">📈 Q3 — Em Desenvolvimento</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px">Score 0,095 – 0,193</div>
+        </div>
+        <div style="text-align:right">
+          <div class="qc-count" style="color:#f57c00">48</div>
+          <div class="qc-count-label">vendedores</div>
+        </div>
+      </div>
+      <div class="qc-stats">
+        <div class="qc-stat"><div class="qc-stat-val">127</div><div class="qc-stat-lbl">Ø Vidas</div></div>
+        <div class="qc-stat"><div class="qc-stat-val">6,0%</div><div class="qc-stat-lbl">Ø Conv.</div></div>
+        <div class="qc-stat"><div class="qc-stat-val">2.416</div><div class="qc-stat-lbl">Ø Leads</div></div>
+      </div>
+    </div>
+    <div class="quartil-card crit">
+      <div class="qc-header">
+        <div>
+          <div class="qc-title" style="color:#c62828">⚠️ Q4 — Crítico</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px">Score &lt; 0,095</div>
+        </div>
+        <div style="text-align:right">
+          <div class="qc-count" style="color:#c62828">49</div>
+          <div class="qc-count-label">vendedores</div>
+        </div>
+      </div>
+      <div class="qc-stats">
+        <div class="qc-stat"><div class="qc-stat-val">27</div><div class="qc-stat-lbl">Ø Vidas</div></div>
+        <div class="qc-stat"><div class="qc-stat-val">3,4%</div><div class="qc-stat-lbl">Ø Conv.</div></div>
+        <div class="qc-stat"><div class="qc-stat-val">719</div><div class="qc-stat-lbl">Ø Leads</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📋 Ranking Completo</h2>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="setFilter('todos')">Todos (194)</button>
+    <button class="tab" onclick="setFilter('Q1 - Elite')">🏆 Elite (49)</button>
+    <button class="tab" onclick="setFilter('Q2 - Bom')">✅ Bom (48)</button>
+    <button class="tab" onclick="setFilter('Q3 - Em Desenvolvimento')">📈 Em Desenvolvimento (48)</button>
+    <button class="tab" onclick="setFilter('Q4 - Crítico')">⚠️ Crítico (49)</button>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="🔍  Buscar promotor ou unidade..." oninput="applyFilters()">
+    <select id="unidade" onchange="applyFilters()">
+      <option value="">Todas as Unidades</option>
+    </select>
+    <span class="count-badge" id="count-badge">194 vendedores</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortBy('Rank')" id="th-Rank">Rank <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('PROMOTOR')" id="th-PROMOTOR">Promotor <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('UNIDADE')" id="th-UNIDADE">Unidade <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('Total_Vidas')" id="th-Total_Vidas">Total Vidas <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('Conv_Rate_pct')" id="th-Conv_Rate_pct">% Conv. <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('Total_Leads')" id="th-Total_Leads">Total Leads <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('Score')" id="th-Score">Score <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('Quartil')" id="th-Quartil">Quartil <span class="sort-icon">↕</span></th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+  <div class="pag" id="pag"></div>
+</div>
+
+<footer>Gerado por análise de dados · Planilha2 (2) · Jan–Mai 2026 · Score = Vidas×50% + Conv×30% + Leads×20% (normalizado)</footer>
+
+<script>
+const DATA = [{"PROMOTOR":"BRUNA CAMPASSI","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":13016,"Total_Vidas":597,"Conv_Rate_pct":4.59,"Score":0.638,"Quartil":"Q1 - Elite","Rank":1},{"PROMOTOR":"CAMILA GOMES","UNIDADE":"SÃO PAULO","Total_Leads":4144,"Total_Vidas":704,"Conv_Rate_pct":16.99,"Score":0.615,"Quartil":"Q1 - Elite","Rank":2},{"PROMOTOR":"JAQUELINE SILVA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":11073,"Total_Vidas":578,"Conv_Rate_pct":5.22,"Score":0.596,"Quartil":"Q1 - Elite","Rank":3},{"PROMOTOR":"JULIA SILVA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":10160,"Total_Vidas":582,"Conv_Rate_pct":5.73,"Score":0.587,"Quartil":"Q1 - Elite","Rank":4},{"PROMOTOR":"FELIPE SOARES","UNIDADE":"SÃO PAULO","Total_Leads":6496,"Total_Vidas":579,"Conv_Rate_pct":8.91,"Score":0.538,"Quartil":"Q1 - Elite","Rank":5},{"PROMOTOR":"ELISA NASCIMENTO","UNIDADE":"PIRASSUNUNGA","Total_Leads":2053,"Total_Vidas":590,"Conv_Rate_pct":28.74,"Score":0.537,"Quartil":"Q1 - Elite","Rank":6},{"PROMOTOR":"ALINE GUNELLO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":9454,"Total_Vidas":522,"Conv_Rate_pct":5.52,"Score":0.533,"Quartil":"Q1 - Elite","Rank":7},{"PROMOTOR":"WENDEL ANDRADE","UNIDADE":"SÃO PAULO","Total_Leads":5612,"Total_Vidas":583,"Conv_Rate_pct":10.39,"Score":0.531,"Quartil":"Q1 - Elite","Rank":8},{"PROMOTOR":"MARIA MAGALHAES","UNIDADE":"SÃO PAULO","Total_Leads":6191,"Total_Vidas":571,"Conv_Rate_pct":9.22,"Score":0.528,"Quartil":"Q1 - Elite","Rank":9},{"PROMOTOR":"ROBSON SOUZA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":10386,"Total_Vidas":491,"Conv_Rate_pct":4.73,"Score":0.522,"Quartil":"Q1 - Elite","Rank":10},{"PROMOTOR":"FELIPE SOUZA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":9553,"Total_Vidas":504,"Conv_Rate_pct":5.28,"Score":0.521,"Quartil":"Q1 - Elite","Rank":11},{"PROMOTOR":"BRUNA SOARES","UNIDADE":"NOVA SEG","Total_Leads":5142,"Total_Vidas":536,"Conv_Rate_pct":10.42,"Score":0.491,"Quartil":"Q1 - Elite","Rank":12},{"PROMOTOR":"MARIANA FELIX","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":7182,"Total_Vidas":484,"Conv_Rate_pct":6.74,"Score":0.474,"Quartil":"Q1 - Elite","Rank":13},{"PROMOTOR":"ANA CAROLINA ANTUNES","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":7918,"Total_Vidas":455,"Conv_Rate_pct":5.75,"Score":0.462,"Quartil":"Q1 - Elite","Rank":14},{"PROMOTOR":"RAIANE CARDOSO","UNIDADE":"PIRASSUNUNGA","Total_Leads":5382,"Total_Vidas":490,"Conv_Rate_pct":9.10,"Score":0.458,"Quartil":"Q1 - Elite","Rank":15},{"PROMOTOR":"ANDREZZA MACCHINI","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":7809,"Total_Vidas":450,"Conv_Rate_pct":5.76,"Score":0.457,"Quartil":"Q1 - Elite","Rank":16},{"PROMOTOR":"LILIANE RIBEIRO","UNIDADE":"FORTALEZA","Total_Leads":2677,"Total_Vidas":503,"Conv_Rate_pct":18.79,"Score":0.455,"Quartil":"Q1 - Elite","Rank":17},{"PROMOTOR":"JULIANA NUNES","UNIDADE":"FORTALEZA","Total_Leads":9582,"Total_Vidas":410,"Conv_Rate_pct":4.28,"Score":0.451,"Quartil":"Q1 - Elite","Rank":18},{"PROMOTOR":"INGRYD SILVA","UNIDADE":"PIRASSUNUNGA","Total_Leads":5597,"Total_Vidas":454,"Conv_Rate_pct":8.11,"Score":0.433,"Quartil":"Q1 - Elite","Rank":19},{"PROMOTOR":"DAVI MAGALHAES","UNIDADE":"FORTALEZA","Total_Leads":3198,"Total_Vidas":470,"Conv_Rate_pct":14.70,"Score":0.427,"Quartil":"Q1 - Elite","Rank":20},{"PROMOTOR":"ISABELLA MATTOS","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":7370,"Total_Vidas":414,"Conv_Rate_pct":5.62,"Score":0.424,"Quartil":"Q1 - Elite","Rank":21},{"PROMOTOR":"GIOVANNA FERREIRA","UNIDADE":"NACIONAL","Total_Leads":4885,"Total_Vidas":450,"Conv_Rate_pct":9.21,"Score":0.422,"Quartil":"Q1 - Elite","Rank":22},{"PROMOTOR":"TAISSE MACARIO","UNIDADE":"NOVA SEG","Total_Leads":2299,"Total_Vidas":436,"Conv_Rate_pct":18.96,"Score":0.402,"Quartil":"Q1 - Elite","Rank":23},{"PROMOTOR":"ALINE RIBEIRO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":8189,"Total_Vidas":347,"Conv_Rate_pct":4.24,"Score":0.385,"Quartil":"Q1 - Elite","Rank":24},{"PROMOTOR":"DELIANE GOMES","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":6120,"Total_Vidas":376,"Conv_Rate_pct":6.14,"Score":0.379,"Quartil":"Q1 - Elite","Rank":25},{"PROMOTOR":"LUAN RIBEIRO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":7955,"Total_Vidas":341,"Conv_Rate_pct":4.29,"Score":0.377,"Quartil":"Q1 - Elite","Rank":26},{"PROMOTOR":"ELLEN KIARA","UNIDADE":"SÃO PAULO","Total_Leads":3550,"Total_Vidas":406,"Conv_Rate_pct":11.44,"Score":0.377,"Quartil":"Q1 - Elite","Rank":27},{"PROMOTOR":"LEONARDO MURAROLLI","UNIDADE":"PIRASSUNUNGA","Total_Leads":262,"Total_Vidas":201,"Conv_Rate_pct":76.72,"Score":0.377,"Quartil":"Q1 - Elite","Rank":28},{"PROMOTOR":"VANESSA ANDRIOTI","UNIDADE":"PIRASSUNUNGA","Total_Leads":2735,"Total_Vidas":408,"Conv_Rate_pct":14.92,"Score":0.376,"Quartil":"Q1 - Elite","Rank":29},{"PROMOTOR":"ELISAMA GIZZI","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2771,"Total_Vidas":405,"Conv_Rate_pct":14.62,"Score":0.374,"Quartil":"Q1 - Elite","Rank":30},{"PROMOTOR":"RAYANE LOPES","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":5089,"Total_Vidas":375,"Conv_Rate_pct":7.37,"Score":0.367,"Quartil":"Q1 - Elite","Rank":31},{"PROMOTOR":"KETHELYN GUIDO","UNIDADE":"SÃO PAULO","Total_Leads":2335,"Total_Vidas":388,"Conv_Rate_pct":16.62,"Score":0.361,"Quartil":"Q1 - Elite","Rank":32},{"PROMOTOR":"GUSTAVO BARROS","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":6153,"Total_Vidas":351,"Conv_Rate_pct":5.70,"Score":0.361,"Quartil":"Q1 - Elite","Rank":33},{"PROMOTOR":"RIQUELMY SANTOS","UNIDADE":"FORTALEZA","Total_Leads":3199,"Total_Vidas":378,"Conv_Rate_pct":11.82,"Score":0.353,"Quartil":"Q1 - Elite","Rank":34},{"PROMOTOR":"EDILZA SILVA","UNIDADE":"SÃO PAULO","Total_Leads":3756,"Total_Vidas":366,"Conv_Rate_pct":9.74,"Score":0.347,"Quartil":"Q1 - Elite","Rank":35},{"PROMOTOR":"CYNTIA MODENA","UNIDADE":"PIRASSUNUNGA","Total_Leads":2199,"Total_Vidas":367,"Conv_Rate_pct":16.69,"Score":0.344,"Quartil":"Q1 - Elite","Rank":36},{"PROMOTOR":"JOAO DEL NERO","UNIDADE":"PIRASSUNUNGA","Total_Leads":1272,"Total_Vidas":341,"Conv_Rate_pct":26.81,"Score":0.342,"Quartil":"Q1 - Elite","Rank":37},{"PROMOTOR":"LORENA ORTEGA","UNIDADE":"PIRASSUNUNGA","Total_Leads":1886,"Total_Vidas":354,"Conv_Rate_pct":18.77,"Score":0.337,"Quartil":"Q1 - Elite","Rank":38},{"PROMOTOR":"TATI SILVA - VENDEDOR ADM","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1649,"Total_Vidas":349,"Conv_Rate_pct":21.16,"Score":0.337,"Quartil":"Q1 - Elite","Rank":39},{"PROMOTOR":"GIOVANNA SANTANA - VENDEDOR ADM","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2216,"Total_Vidas":356,"Conv_Rate_pct":16.06,"Score":0.335,"Quartil":"Q1 - Elite","Rank":40},{"PROMOTOR":"NATHALY VIEIRA","UNIDADE":"NACIONAL","Total_Leads":4918,"Total_Vidas":335,"Conv_Rate_pct":6.81,"Score":0.334,"Quartil":"Q1 - Elite","Rank":41},{"PROMOTOR":"JOICE ALINE","UNIDADE":"BENVE","Total_Leads":6,"Total_Vidas":41,"Conv_Rate_pct":683.33,"Score":0.329,"Quartil":"Q1 - Elite","Rank":42},{"PROMOTOR":"UNILDO FERREIRA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":6125,"Total_Vidas":293,"Conv_Rate_pct":4.78,"Score":0.317,"Quartil":"Q1 - Elite","Rank":43},{"PROMOTOR":"ANDRESSA BARBOZA","UNIDADE":"PIRASSUNUNGA","Total_Leads":2268,"Total_Vidas":333,"Conv_Rate_pct":14.68,"Score":0.315,"Quartil":"Q1 - Elite","Rank":44},{"PROMOTOR":"VLADIA SOARES","UNIDADE":"FORTALEZA","Total_Leads":7407,"Total_Vidas":265,"Conv_Rate_pct":3.58,"Score":0.313,"Quartil":"Q1 - Elite","Rank":45},{"PROMOTOR":"MIRIAM FERREIRA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":6819,"Total_Vidas":274,"Conv_Rate_pct":4.02,"Score":0.311,"Quartil":"Q1 - Elite","Rank":46},{"PROMOTOR":"GISELE OLIVEIRA","UNIDADE":"PIRASSUNUNGA","Total_Leads":4579,"Total_Vidas":305,"Conv_Rate_pct":6.66,"Score":0.307,"Quartil":"Q1 - Elite","Rank":47},{"PROMOTOR":"LUIZ ROBERTO AUGUSTO","UNIDADE":"PIRASSUNUNGA","Total_Leads":272,"Total_Vidas":167,"Conv_Rate_pct":61.40,"Score":0.307,"Quartil":"Q1 - Elite","Rank":48},{"PROMOTOR":"ADRIANI DZIERVA","UNIDADE":"NACIONAL","Total_Leads":2305,"Total_Vidas":317,"Conv_Rate_pct":13.75,"Score":0.302,"Quartil":"Q1 - Elite","Rank":49},{"PROMOTOR":"THAISA ALMEIDA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":7091,"Total_Vidas":249,"Conv_Rate_pct":3.51,"Score":0.296,"Quartil":"Q2 - Bom","Rank":50},{"PROMOTOR":"RAFAELA SANTOS","UNIDADE":"NACIONAL","Total_Leads":1433,"Total_Vidas":296,"Conv_Rate_pct":20.66,"Score":0.294,"Quartil":"Q2 - Bom","Rank":51},{"PROMOTOR":"GABRIELA MORAES","UNIDADE":"PIRASSUNUNGA","Total_Leads":1290,"Total_Vidas":290,"Conv_Rate_pct":22.48,"Score":0.293,"Quartil":"Q2 - Bom","Rank":52},{"PROMOTOR":"MARCELA MONTANARI","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":6414,"Total_Vidas":255,"Conv_Rate_pct":3.98,"Score":0.292,"Quartil":"Q2 - Bom","Rank":53},{"PROMOTOR":"VICTOR FREITAS","UNIDADE":"FORTALEZA","Total_Leads":1728,"Total_Vidas":297,"Conv_Rate_pct":17.19,"Score":0.289,"Quartil":"Q2 - Bom","Rank":54},{"PROMOTOR":"GABRIELA REIS","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":4473,"Total_Vidas":268,"Conv_Rate_pct":5.99,"Score":0.277,"Quartil":"Q2 - Bom","Rank":55},{"PROMOTOR":"LIGIVANIA SILVA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":6545,"Total_Vidas":228,"Conv_Rate_pct":3.48,"Score":0.273,"Quartil":"Q2 - Bom","Rank":56},{"PROMOTOR":"KAROL BUENO","UNIDADE":"NACIONAL","Total_Leads":1846,"Total_Vidas":280,"Conv_Rate_pct":15.17,"Score":0.273,"Quartil":"Q2 - Bom","Rank":57},{"PROMOTOR":"KAYKY BERNARDO","UNIDADE":"FORTALEZA","Total_Leads":4293,"Total_Vidas":258,"Conv_Rate_pct":6.01,"Score":0.267,"Quartil":"Q2 - Bom","Rank":58},{"PROMOTOR":"ANDRE BRITO","UNIDADE":"FORTALEZA","Total_Leads":1174,"Total_Vidas":258,"Conv_Rate_pct":21.98,"Score":0.267,"Quartil":"Q2 - Bom","Rank":59},{"PROMOTOR":"BRENA PAIVA","UNIDADE":"FORTALEZA","Total_Leads":4866,"Total_Vidas":247,"Conv_Rate_pct":5.08,"Score":0.265,"Quartil":"Q2 - Bom","Rank":60},{"PROMOTOR":"ARLYSON SILVA","UNIDADE":"FORTALEZA","Total_Leads":1812,"Total_Vidas":271,"Conv_Rate_pct":14.96,"Score":0.265,"Quartil":"Q2 - Bom","Rank":61},{"PROMOTOR":"FRANCISCO THIAGO","UNIDADE":"FORTALEZA","Total_Leads":3823,"Total_Vidas":259,"Conv_Rate_pct":6.77,"Score":0.263,"Quartil":"Q2 - Bom","Rank":62},{"PROMOTOR":"ISABELLA SOUZA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":5569,"Total_Vidas":231,"Conv_Rate_pct":4.15,"Score":0.262,"Quartil":"Q2 - Bom","Rank":63},{"PROMOTOR":"MARCIA REGINA","UNIDADE":"SÃO PAULO","Total_Leads":2693,"Total_Vidas":268,"Conv_Rate_pct":9.95,"Score":0.262,"Quartil":"Q2 - Bom","Rank":64},{"PROMOTOR":"PAULA JESUS","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1788,"Total_Vidas":263,"Conv_Rate_pct":14.71,"Score":0.258,"Quartil":"Q2 - Bom","Rank":65},{"PROMOTOR":"FLAVIA ROMBACH","UNIDADE":"NACIONAL","Total_Leads":2010,"Total_Vidas":262,"Conv_Rate_pct":13.03,"Score":0.256,"Quartil":"Q2 - Bom","Rank":66},{"PROMOTOR":"THAINA BERCHELI","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":4131,"Total_Vidas":232,"Conv_Rate_pct":5.62,"Score":0.245,"Quartil":"Q2 - Bom","Rank":67},{"PROMOTOR":"MOOARA RODRIGUES","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3633,"Total_Vidas":237,"Conv_Rate_pct":6.52,"Score":0.244,"Quartil":"Q2 - Bom","Rank":68},{"PROMOTOR":"LIDIANE MALTA","UNIDADE":"BAURU","Total_Leads":2136,"Total_Vidas":247,"Conv_Rate_pct":11.56,"Score":0.243,"Quartil":"Q2 - Bom","Rank":69},{"PROMOTOR":"DANILO FOGACA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3671,"Total_Vidas":230,"Conv_Rate_pct":6.27,"Score":0.238,"Quartil":"Q2 - Bom","Rank":70},{"PROMOTOR":"LIVIA GABRIELA","UNIDADE":"NOVA SEG","Total_Leads":5647,"Total_Vidas":198,"Conv_Rate_pct":3.51,"Score":0.238,"Quartil":"Q2 - Bom","Rank":71},{"PROMOTOR":"KAUAN REGIS","UNIDADE":"FORTALEZA","Total_Leads":1710,"Total_Vidas":238,"Conv_Rate_pct":13.92,"Score":0.237,"Quartil":"Q2 - Bom","Rank":72},{"PROMOTOR":"SUELLEN GUIMARAES","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2524,"Total_Vidas":238,"Conv_Rate_pct":9.43,"Score":0.236,"Quartil":"Q2 - Bom","Rank":73},{"PROMOTOR":"DANIELA RIBEIRO","UNIDADE":"SÃO PAULO","Total_Leads":1878,"Total_Vidas":235,"Conv_Rate_pct":12.51,"Score":0.233,"Quartil":"Q2 - Bom","Rank":74},{"PROMOTOR":"PATRICIA JORGE","UNIDADE":"NOVA SEG","Total_Leads":5388,"Total_Vidas":191,"Conv_Rate_pct":3.54,"Score":0.229,"Quartil":"Q2 - Bom","Rank":75},{"PROMOTOR":"BEATRIZ CORDEIRO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":4692,"Total_Vidas":200,"Conv_Rate_pct":4.26,"Score":0.227,"Quartil":"Q2 - Bom","Rank":76},{"PROMOTOR":"JULIA MARQUES","UNIDADE":"BENVE","Total_Leads":3542,"Total_Vidas":216,"Conv_Rate_pct":6.10,"Score":0.226,"Quartil":"Q2 - Bom","Rank":77},{"PROMOTOR":"JONATAS QUARESMA","UNIDADE":"FORTALEZA","Total_Leads":4811,"Total_Vidas":194,"Conv_Rate_pct":4.03,"Score":0.224,"Quartil":"Q2 - Bom","Rank":78},{"PROMOTOR":"JANEILA FIGUEIREDO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3839,"Total_Vidas":208,"Conv_Rate_pct":5.42,"Score":0.223,"Quartil":"Q2 - Bom","Rank":79},{"PROMOTOR":"CINTIA FERREIRA","UNIDADE":"BAURU","Total_Leads":2078,"Total_Vidas":220,"Conv_Rate_pct":10.59,"Score":0.220,"Quartil":"Q2 - Bom","Rank":80},{"PROMOTOR":"LEIA FERREIRA","UNIDADE":"FORTALEZA","Total_Leads":3621,"Total_Vidas":206,"Conv_Rate_pct":5.69,"Score":0.219,"Quartil":"Q2 - Bom","Rank":81},{"PROMOTOR":"HERIKA ZAKARQUIM","UNIDADE":"NACIONAL","Total_Leads":1974,"Total_Vidas":215,"Conv_Rate_pct":10.89,"Score":0.216,"Quartil":"Q2 - Bom","Rank":82},{"PROMOTOR":"JESSICA COSTA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":4196,"Total_Vidas":193,"Conv_Rate_pct":4.60,"Score":0.215,"Quartil":"Q2 - Bom","Rank":83},{"PROMOTOR":"ANA JULIA LOPES","UNIDADE":"FORTALEZA","Total_Leads":3094,"Total_Vidas":205,"Conv_Rate_pct":6.63,"Score":0.213,"Quartil":"Q2 - Bom","Rank":84},{"PROMOTOR":"LEIDIANE CASTRO","UNIDADE":"FORTALEZA","Total_Leads":4229,"Total_Vidas":188,"Conv_Rate_pct":4.45,"Score":0.212,"Quartil":"Q2 - Bom","Rank":85},{"PROMOTOR":"CAMILA MOREIRA","UNIDADE":"BENVE","Total_Leads":3891,"Total_Vidas":193,"Conv_Rate_pct":4.96,"Score":0.212,"Quartil":"Q2 - Bom","Rank":86},{"PROMOTOR":"GLEIRE VALERIO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3686,"Total_Vidas":195,"Conv_Rate_pct":5.29,"Score":0.211,"Quartil":"Q2 - Bom","Rank":87},{"PROMOTOR":"ISABELLE RIBEIRO","UNIDADE":"FORTALEZA","Total_Leads":3534,"Total_Vidas":194,"Conv_Rate_pct":5.49,"Score":0.208,"Quartil":"Q2 - Bom","Rank":88},{"PROMOTOR":"BRUNO FERREIRA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3920,"Total_Vidas":187,"Conv_Rate_pct":4.77,"Score":0.207,"Quartil":"Q2 - Bom","Rank":89},{"PROMOTOR":"LUCIANE LIMA","UNIDADE":"FORTALEZA","Total_Leads":4988,"Total_Vidas":167,"Conv_Rate_pct":3.35,"Score":0.205,"Quartil":"Q2 - Bom","Rank":90},{"PROMOTOR":"LAIANE ROCHA","UNIDADE":"NOVA SEG","Total_Leads":4623,"Total_Vidas":173,"Conv_Rate_pct":3.74,"Score":0.205,"Quartil":"Q2 - Bom","Rank":91},{"PROMOTOR":"ANA PAULA CAMPANA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3063,"Total_Vidas":194,"Conv_Rate_pct":6.33,"Score":0.204,"Quartil":"Q2 - Bom","Rank":92},{"PROMOTOR":"THAMIRIS FRANCISQUELLI","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3655,"Total_Vidas":184,"Conv_Rate_pct":5.03,"Score":0.202,"Quartil":"Q2 - Bom","Rank":93},{"PROMOTOR":"ALRIAN ARAÚJO","UNIDADE":"FORTALEZA","Total_Leads":5267,"Total_Vidas":155,"Conv_Rate_pct":2.94,"Score":0.200,"Quartil":"Q2 - Bom","Rank":94},{"PROMOTOR":"VANIA SILVA","UNIDADE":"FORTALEZA","Total_Leads":4412,"Total_Vidas":167,"Conv_Rate_pct":3.79,"Score":0.198,"Quartil":"Q2 - Bom","Rank":95},{"PROMOTOR":"TAIS COLARES","UNIDADE":"BENVE","Total_Leads":2605,"Total_Vidas":190,"Conv_Rate_pct":7.29,"Score":0.197,"Quartil":"Q2 - Bom","Rank":96},{"PROMOTOR":"ANTONIO NOBRE","UNIDADE":"FORTALEZA","Total_Leads":4566,"Total_Vidas":159,"Conv_Rate_pct":3.48,"Score":0.193,"Quartil":"Q2 - Bom","Rank":97},{"PROMOTOR":"ANA BEATRIZ MACHUCA","UNIDADE":"BENVE","Total_Leads":3224,"Total_Vidas":179,"Conv_Rate_pct":5.55,"Score":0.193,"Quartil":"Q3 - Em Desenvolvimento","Rank":98},{"PROMOTOR":"LUANA ARAUJO","UNIDADE":"FORTALEZA","Total_Leads":4124,"Total_Vidas":160,"Conv_Rate_pct":3.88,"Score":0.189,"Quartil":"Q3 - Em Desenvolvimento","Rank":99},{"PROMOTOR":"CAROLINE EGIDIO","UNIDADE":"NOVA SEG","Total_Leads":3943,"Total_Vidas":162,"Conv_Rate_pct":4.11,"Score":0.188,"Quartil":"Q3 - Em Desenvolvimento","Rank":100},{"PROMOTOR":"RAIANE LIMA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3916,"Total_Vidas":162,"Conv_Rate_pct":4.14,"Score":0.188,"Quartil":"Q3 - Em Desenvolvimento","Rank":101},{"PROMOTOR":"LARISSA MACHADO","UNIDADE":"NOVA SEG","Total_Leads":2577,"Total_Vidas":179,"Conv_Rate_pct":6.95,"Score":0.187,"Quartil":"Q3 - Em Desenvolvimento","Rank":102},{"PROMOTOR":"TAIS AMANDA CARDOSO","UNIDADE":"FORTALEZA","Total_Leads":3502,"Total_Vidas":154,"Conv_Rate_pct":4.40,"Score":0.176,"Quartil":"Q3 - Em Desenvolvimento","Rank":103},{"PROMOTOR":"LUCIANA TRIPICCHIO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2813,"Total_Vidas":163,"Conv_Rate_pct":5.79,"Score":0.176,"Quartil":"Q3 - Em Desenvolvimento","Rank":104},{"PROMOTOR":"TAIS LOPES","UNIDADE":"BENVE","Total_Leads":3412,"Total_Vidas":155,"Conv_Rate_pct":4.54,"Score":0.176,"Quartil":"Q3 - Em Desenvolvimento","Rank":105},{"PROMOTOR":"NATALIA BORGES","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2657,"Total_Vidas":163,"Conv_Rate_pct":6.13,"Score":0.175,"Quartil":"Q3 - Em Desenvolvimento","Rank":106},{"PROMOTOR":"PATRICIA LIMA - VENDEDOR ADM","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3106,"Total_Vidas":157,"Conv_Rate_pct":5.05,"Score":0.174,"Quartil":"Q3 - Em Desenvolvimento","Rank":107},{"PROMOTOR":"MATEUS GARCIA","UNIDADE":"NACIONAL","Total_Leads":722,"Total_Vidas":145,"Conv_Rate_pct":20.08,"Score":0.174,"Quartil":"Q3 - Em Desenvolvimento","Rank":108},{"PROMOTOR":"RENAN OLIVEIRA","UNIDADE":"SÃO PAULO","Total_Leads":2249,"Total_Vidas":163,"Conv_Rate_pct":7.25,"Score":0.172,"Quartil":"Q3 - Em Desenvolvimento","Rank":109},{"PROMOTOR":"NATALIA LEITE","UNIDADE":"NOVA SEG","Total_Leads":2646,"Total_Vidas":159,"Conv_Rate_pct":6.01,"Score":0.172,"Quartil":"Q3 - Em Desenvolvimento","Rank":110},{"PROMOTOR":"SONIA LINO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3490,"Total_Vidas":148,"Conv_Rate_pct":4.24,"Score":0.171,"Quartil":"Q3 - Em Desenvolvimento","Rank":111},{"PROMOTOR":"PAULA LOURENCO","UNIDADE":"NOVA SEG","Total_Leads":3733,"Total_Vidas":143,"Conv_Rate_pct":3.83,"Score":0.170,"Quartil":"Q3 - Em Desenvolvimento","Rank":112},{"PROMOTOR":"JONATHAS REIS","UNIDADE":"FORTALEZA","Total_Leads":2043,"Total_Vidas":160,"Conv_Rate_pct":7.83,"Score":0.168,"Quartil":"Q3 - Em Desenvolvimento","Rank":113},{"PROMOTOR":"LARISSA PAES","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2269,"Total_Vidas":157,"Conv_Rate_pct":6.92,"Score":0.167,"Quartil":"Q3 - Em Desenvolvimento","Rank":114},{"PROMOTOR":"SABRINA GIOLO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":3459,"Total_Vidas":143,"Conv_Rate_pct":4.13,"Score":0.167,"Quartil":"Q3 - Em Desenvolvimento","Rank":115},{"PROMOTOR":"DANIELLE MUZELL","UNIDADE":"BENVE","Total_Leads":2485,"Total_Vidas":155,"Conv_Rate_pct":6.24,"Score":0.167,"Quartil":"Q3 - Em Desenvolvimento","Rank":116},{"PROMOTOR":"ROMARIO SOUZA","UNIDADE":"FORTALEZA","Total_Leads":3695,"Total_Vidas":131,"Conv_Rate_pct":3.55,"Score":0.160,"Quartil":"Q3 - Em Desenvolvimento","Rank":117},{"PROMOTOR":"MARIA APARECIDA CORREA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1592,"Total_Vidas":151,"Conv_Rate_pct":9.48,"Score":0.160,"Quartil":"Q3 - Em Desenvolvimento","Rank":118},{"PROMOTOR":"PAULO LEVI","UNIDADE":"FORTALEZA","Total_Leads":2594,"Total_Vidas":143,"Conv_Rate_pct":5.51,"Score":0.158,"Quartil":"Q3 - Em Desenvolvimento","Rank":119},{"PROMOTOR":"MURILO VASSAO","UNIDADE":"NACIONAL","Total_Leads":2468,"Total_Vidas":141,"Conv_Rate_pct":5.71,"Score":0.155,"Quartil":"Q3 - Em Desenvolvimento","Rank":120},{"PROMOTOR":"CRISTINA LOPES","UNIDADE":"BENVE","Total_Leads":2943,"Total_Vidas":134,"Conv_Rate_pct":4.55,"Score":0.154,"Quartil":"Q3 - Em Desenvolvimento","Rank":121},{"PROMOTOR":"SAMILA FERREIRA","UNIDADE":"FORTALEZA","Total_Leads":2734,"Total_Vidas":129,"Conv_Rate_pct":4.72,"Score":0.148,"Quartil":"Q3 - Em Desenvolvimento","Rank":122},{"PROMOTOR":"ANGELO RIBEIRO","UNIDADE":"FORTALEZA","Total_Leads":1383,"Total_Vidas":136,"Conv_Rate_pct":9.83,"Score":0.147,"Quartil":"Q3 - Em Desenvolvimento","Rank":123},{"PROMOTOR":"LUANA LIMA","UNIDADE":"FORTALEZA","Total_Leads":1295,"Total_Vidas":132,"Conv_Rate_pct":10.19,"Score":0.144,"Quartil":"Q3 - Em Desenvolvimento","Rank":124},{"PROMOTOR":"ISABELLA MICHELETO","UNIDADE":"NOVA SEG","Total_Leads":3333,"Total_Vidas":114,"Conv_Rate_pct":3.42,"Score":0.142,"Quartil":"Q3 - Em Desenvolvimento","Rank":125},{"PROMOTOR":"SOFIA LUNGA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2666,"Total_Vidas":117,"Conv_Rate_pct":4.39,"Score":0.137,"Quartil":"Q3 - Em Desenvolvimento","Rank":126},{"PROMOTOR":"LARYSSA BRITO","UNIDADE":"FORTALEZA","Total_Leads":1886,"Total_Vidas":124,"Conv_Rate_pct":6.57,"Score":0.137,"Quartil":"Q3 - Em Desenvolvimento","Rank":127},{"PROMOTOR":"RENATO JESUS","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2364,"Total_Vidas":116,"Conv_Rate_pct":4.91,"Score":0.133,"Quartil":"Q3 - Em Desenvolvimento","Rank":128},{"PROMOTOR":"LENILSON GOMES","UNIDADE":"FORTALEZA","Total_Leads":2572,"Total_Vidas":110,"Conv_Rate_pct":4.28,"Score":0.130,"Quartil":"Q3 - Em Desenvolvimento","Rank":129},{"PROMOTOR":"EBOLY NEVES","UNIDADE":"FORTALEZA","Total_Leads":3261,"Total_Vidas":95,"Conv_Rate_pct":2.91,"Score":0.126,"Quartil":"Q3 - Em Desenvolvimento","Rank":130},{"PROMOTOR":"KEILA OLIVEIRA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1900,"Total_Vidas":105,"Conv_Rate_pct":5.53,"Score":0.120,"Quartil":"Q3 - Em Desenvolvimento","Rank":131},{"PROMOTOR":"ESTELA OLIVEIRA","UNIDADE":"NACIONAL","Total_Leads":2218,"Total_Vidas":98,"Conv_Rate_pct":4.42,"Score":0.117,"Quartil":"Q3 - Em Desenvolvimento","Rank":132},{"PROMOTOR":"LARISSY RAMOS","UNIDADE":"FORTALEZA","Total_Leads":1235,"Total_Vidas":99,"Conv_Rate_pct":8.02,"Score":0.113,"Quartil":"Q3 - Em Desenvolvimento","Rank":133},{"PROMOTOR":"CECILIA CAMPELO","UNIDADE":"FORTALEZA","Total_Leads":2355,"Total_Vidas":92,"Conv_Rate_pct":3.91,"Score":0.113,"Quartil":"Q3 - Em Desenvolvimento","Rank":134},{"PROMOTOR":"HIGOR CRISPIM","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1878,"Total_Vidas":93,"Conv_Rate_pct":4.95,"Score":0.110,"Quartil":"Q3 - Em Desenvolvimento","Rank":135},{"PROMOTOR":"JENNIFER FARIAS","UNIDADE":"NACIONAL","Total_Leads":1731,"Total_Vidas":93,"Conv_Rate_pct":5.37,"Score":0.109,"Quartil":"Q3 - Em Desenvolvimento","Rank":136},{"PROMOTOR":"ATILEY CAMPOS","UNIDADE":"FORTALEZA","Total_Leads":828,"Total_Vidas":89,"Conv_Rate_pct":10.75,"Score":0.108,"Quartil":"Q3 - Em Desenvolvimento","Rank":137},{"PROMOTOR":"MIKAEL COSTA","UNIDADE":"FORTALEZA","Total_Leads":1746,"Total_Vidas":90,"Conv_Rate_pct":5.15,"Score":0.106,"Quartil":"Q3 - Em Desenvolvimento","Rank":138},{"PROMOTOR":"LARISSA BIZELI","UNIDADE":"SÃO PAULO","Total_Leads":899,"Total_Vidas":88,"Conv_Rate_pct":9.79,"Score":0.106,"Quartil":"Q3 - Em Desenvolvimento","Rank":139},{"PROMOTOR":"KAMILA KUNER","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2337,"Total_Vidas":83,"Conv_Rate_pct":3.55,"Score":0.105,"Quartil":"Q3 - Em Desenvolvimento","Rank":140},{"PROMOTOR":"GIOVANNA BARBIERI","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1275,"Total_Vidas":90,"Conv_Rate_pct":7.06,"Score":0.105,"Quartil":"Q3 - Em Desenvolvimento","Rank":141},{"PROMOTOR":"RAFAELA BRUNA SOUSA","UNIDADE":"FORTALEZA","Total_Leads":1587,"Total_Vidas":86,"Conv_Rate_pct":5.42,"Score":0.102,"Quartil":"Q3 - Em Desenvolvimento","Rank":142},{"PROMOTOR":"RITA DE CASSIA SAMPAIO","UNIDADE":"FORTALEZA","Total_Leads":2364,"Total_Vidas":77,"Conv_Rate_pct":3.26,"Score":0.101,"Quartil":"Q3 - Em Desenvolvimento","Rank":143},{"PROMOTOR":"MARIA INGRID MARREIRA","UNIDADE":"FORTALEZA","Total_Leads":725,"Total_Vidas":76,"Conv_Rate_pct":10.48,"Score":0.096,"Quartil":"Q3 - Em Desenvolvimento","Rank":144},{"PROMOTOR":"CLEBSON ALVES","UNIDADE":"FORTALEZA","Total_Leads":1751,"Total_Vidas":78,"Conv_Rate_pct":4.45,"Score":0.096,"Quartil":"Q3 - Em Desenvolvimento","Rank":145},{"PROMOTOR":"BRUNO IGNACIO - VENDEDOR ADM","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1728,"Total_Vidas":77,"Conv_Rate_pct":4.46,"Score":0.095,"Quartil":"Q4 - Crítico","Rank":146},{"PROMOTOR":"JADY QUEIROZ","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2097,"Total_Vidas":72,"Conv_Rate_pct":3.43,"Score":0.094,"Quartil":"Q4 - Crítico","Rank":147},{"PROMOTOR":"AMANDA SOUZA - VENDEDOR ADM","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":2155,"Total_Vidas":68,"Conv_Rate_pct":3.16,"Score":0.091,"Quartil":"Q4 - Crítico","Rank":148},{"PROMOTOR":"RAISSA BURIN","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1834,"Total_Vidas":71,"Conv_Rate_pct":3.87,"Score":0.090,"Quartil":"Q4 - Crítico","Rank":149},{"PROMOTOR":"EDUARDA FRANCA","UNIDADE":"FORTALEZA","Total_Leads":588,"Total_Vidas":64,"Conv_Rate_pct":10.88,"Score":0.087,"Quartil":"Q4 - Crítico","Rank":150},{"PROMOTOR":"DAVI ASSUNCAO","UNIDADE":"FORTALEZA","Total_Leads":972,"Total_Vidas":66,"Conv_Rate_pct":6.79,"Score":0.082,"Quartil":"Q4 - Crítico","Rank":151},{"PROMOTOR":"ANA JULIA COSTA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1444,"Total_Vidas":60,"Conv_Rate_pct":4.16,"Score":0.077,"Quartil":"Q4 - Crítico","Rank":152},{"PROMOTOR":"ROGERIO STIVANELLO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":793,"Total_Vidas":59,"Conv_Rate_pct":7.44,"Score":0.076,"Quartil":"Q4 - Crítico","Rank":153},{"PROMOTOR":"LEIDIANE PAULINO","UNIDADE":"FORTALEZA","Total_Leads":1441,"Total_Vidas":59,"Conv_Rate_pct":4.09,"Score":0.076,"Quartil":"Q4 - Crítico","Rank":154},{"PROMOTOR":"SABRINA LIMA","UNIDADE":"FORTALEZA","Total_Leads":3118,"Total_Vidas":35,"Conv_Rate_pct":1.12,"Score":0.076,"Quartil":"Q4 - Crítico","Rank":155},{"PROMOTOR":"LUIZ FELIPE NASCIMENTO","UNIDADE":"FORTALEZA","Total_Leads":894,"Total_Vidas":59,"Conv_Rate_pct":6.60,"Score":0.075,"Quartil":"Q4 - Crítico","Rank":156},{"PROMOTOR":"ALAN KELBER LEAL","UNIDADE":"FORTALEZA","Total_Leads":1378,"Total_Vidas":58,"Conv_Rate_pct":4.21,"Score":0.075,"Quartil":"Q4 - Crítico","Rank":157},{"PROMOTOR":"MARAISA FERNANDA","UNIDADE":"NOVA SEG","Total_Leads":1022,"Total_Vidas":57,"Conv_Rate_pct":5.58,"Score":0.073,"Quartil":"Q4 - Crítico","Rank":158},{"PROMOTOR":"LUZINETE DOURADO","UNIDADE":"SÃO PAULO","Total_Leads":1052,"Total_Vidas":57,"Conv_Rate_pct":5.42,"Score":0.073,"Quartil":"Q4 - Crítico","Rank":159},{"PROMOTOR":"GESSICA NOGUEIRA","UNIDADE":"FORTALEZA","Total_Leads":1512,"Total_Vidas":52,"Conv_Rate_pct":3.44,"Score":0.070,"Quartil":"Q4 - Crítico","Rank":160},{"PROMOTOR":"MIKAELLY CAMILY","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":1155,"Total_Vidas":51,"Conv_Rate_pct":4.42,"Score":0.067,"Quartil":"Q4 - Crítico","Rank":161},{"PROMOTOR":"ISIS ALMEIDA","UNIDADE":"SÃO PAULO","Total_Leads":392,"Total_Vidas":36,"Conv_Rate_pct":9.18,"Score":0.059,"Quartil":"Q4 - Crítico","Rank":162},{"PROMOTOR":"ISAQUE FERREIRA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":968,"Total_Vidas":42,"Conv_Rate_pct":4.34,"Score":0.058,"Quartil":"Q4 - Crítico","Rank":163},{"PROMOTOR":"JULIO CESAR ARARIPE","UNIDADE":"FORTALEZA","Total_Leads":829,"Total_Vidas":39,"Conv_Rate_pct":4.70,"Score":0.054,"Quartil":"Q4 - Crítico","Rank":164},{"PROMOTOR":"ANDREA ANTUNES - VENDEDOR ADM","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":866,"Total_Vidas":35,"Conv_Rate_pct":4.04,"Score":0.050,"Quartil":"Q4 - Crítico","Rank":165},{"PROMOTOR":"JOYCE VASCONCELOS","UNIDADE":"FORTALEZA","Total_Leads":578,"Total_Vidas":31,"Conv_Rate_pct":5.36,"Score":0.047,"Quartil":"Q4 - Crítico","Rank":166},{"PROMOTOR":"NAYARA GOMES","UNIDADE":"NOVA SEG","Total_Leads":810,"Total_Vidas":29,"Conv_Rate_pct":3.58,"Score":0.044,"Quartil":"Q4 - Crítico","Rank":167},{"PROMOTOR":"KAUAN PEREIRA","UNIDADE":"ACTIONLINE","Total_Leads":304,"Total_Vidas":22,"Conv_Rate_pct":7.24,"Score":0.042,"Quartil":"Q4 - Crítico","Rank":168},{"PROMOTOR":"YGOR OLIVEIRA","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":247,"Total_Vidas":19,"Conv_Rate_pct":7.69,"Score":0.040,"Quartil":"Q4 - Crítico","Rank":169},{"PROMOTOR":"SARA NASCIMENTO","UNIDADE":"FORTALEZA","Total_Leads":920,"Total_Vidas":25,"Conv_Rate_pct":2.72,"Score":0.040,"Quartil":"Q4 - Crítico","Rank":170},{"PROMOTOR":"DOUGLAS BATISTA","UNIDADE":"ACTIONLINE","Total_Leads":232,"Total_Vidas":18,"Conv_Rate_pct":7.76,"Score":0.040,"Quartil":"Q4 - Crítico","Rank":171},{"PROMOTOR":"MARIA EDUARDA GOMES","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":435,"Total_Vidas":16,"Conv_Rate_pct":3.68,"Score":0.029,"Quartil":"Q4 - Crítico","Rank":172},{"PROMOTOR":"KAMILA GLAYR","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":243,"Total_Vidas":11,"Conv_Rate_pct":4.53,"Score":0.025,"Quartil":"Q4 - Crítico","Rank":173},{"PROMOTOR":"ISABELLA LOTUFO","UNIDADE":"ACTIONLINE","Total_Leads":433,"Total_Vidas":13,"Conv_Rate_pct":3.00,"Score":0.025,"Quartil":"Q4 - Crítico","Rank":174},{"PROMOTOR":"MONALISA CREVISAN","UNIDADE":"ACTIONLINE","Total_Leads":300,"Total_Vidas":9,"Conv_Rate_pct":3.00,"Score":0.020,"Quartil":"Q4 - Crítico","Rank":175},{"PROMOTOR":"RENAN LIMA","UNIDADE":"PIRASSUNUNGA","Total_Leads":336,"Total_Vidas":6,"Conv_Rate_pct":1.79,"Score":0.015,"Quartil":"Q4 - Crítico","Rank":176},{"PROMOTOR":"ANNA MEL MONTEIRO","UNIDADE":"BENVE","Total_Leads":862,"Total_Vidas":1,"Conv_Rate_pct":0.12,"Score":0.014,"Quartil":"Q4 - Crítico","Rank":177},{"PROMOTOR":"BEATRIZ GIGLIO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":64,"Total_Vidas":2,"Conv_Rate_pct":3.12,"Score":0.012,"Quartil":"Q4 - Crítico","Rank":178},{"PROMOTOR":"SHEILA PINTO","UNIDADE":"ACTIONLINE","Total_Leads":161,"Total_Vidas":3,"Conv_Rate_pct":1.86,"Score":0.010,"Quartil":"Q4 - Crítico","Rank":179},{"PROMOTOR":"WESLEY BACOCCINI","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":213,"Total_Vidas":3,"Conv_Rate_pct":1.41,"Score":0.010,"Quartil":"Q4 - Crítico","Rank":180},{"PROMOTOR":"MANUELA ALMEIDA","UNIDADE":"BENVE","Total_Leads":567,"Total_Vidas":0,"Conv_Rate_pct":0.0,"Score":0.009,"Quartil":"Q4 - Crítico","Rank":181},{"PROMOTOR":"LUCAS FALCOCHIO","UNIDADE":"ACTIONLINE","Total_Leads":111,"Total_Vidas":2,"Conv_Rate_pct":1.80,"Score":0.008,"Quartil":"Q4 - Crítico","Rank":182},{"PROMOTOR":"SABRINA SUM","UNIDADE":"BENVE","Total_Leads":346,"Total_Vidas":2,"Conv_Rate_pct":0.58,"Score":0.008,"Quartil":"Q4 - Crítico","Rank":183},{"PROMOTOR":"JENIFER IRENO","UNIDADE":"BENVE","Total_Leads":452,"Total_Vidas":1,"Conv_Rate_pct":0.22,"Score":0.008,"Quartil":"Q4 - Crítico","Rank":184},{"PROMOTOR":"JOSE ZAMPAR","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":126,"Total_Vidas":2,"Conv_Rate_pct":1.59,"Score":0.008,"Quartil":"Q4 - Crítico","Rank":185},{"PROMOTOR":"SUELEN REIS","UNIDADE":"BENVE","Total_Leads":435,"Total_Vidas":1,"Conv_Rate_pct":0.23,"Score":0.008,"Quartil":"Q4 - Crítico","Rank":186},{"PROMOTOR":"EFRAIM MARQUES","UNIDADE":"ACTIONLINE","Total_Leads":239,"Total_Vidas":2,"Conv_Rate_pct":0.84,"Score":0.008,"Quartil":"Q4 - Crítico","Rank":187},{"PROMOTOR":"MIGUEL BARROSO","UNIDADE":"ACTIONLINE","Total_Leads":220,"Total_Vidas":2,"Conv_Rate_pct":0.91,"Score":0.007,"Quartil":"Q4 - Crítico","Rank":188},{"PROMOTOR":"CARINA CORTEZ","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":171,"Total_Vidas":1,"Conv_Rate_pct":0.58,"Score":0.005,"Quartil":"Q4 - Crítico","Rank":189},{"PROMOTOR":"NICOLAS DORAZZI","UNIDADE":"ACTIONLINE","Total_Leads":68,"Total_Vidas":0,"Conv_Rate_pct":0.0,"Score":0.001,"Quartil":"Q4 - Crítico","Rank":190},{"PROMOTOR":"BEATRIZ PLENS","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":38,"Total_Vidas":0,"Conv_Rate_pct":0.0,"Score":0.000,"Quartil":"Q4 - Crítico","Rank":191},{"PROMOTOR":"HELENA RIBEIRO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":37,"Total_Vidas":0,"Conv_Rate_pct":0.0,"Score":0.000,"Quartil":"Q4 - Crítico","Rank":192},{"PROMOTOR":"MARIANA PRADO","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":21,"Total_Vidas":0,"Conv_Rate_pct":0.0,"Score":0.000,"Quartil":"Q4 - Crítico","Rank":193},{"PROMOTOR":"DANIELLE DE JESUS","UNIDADE":"RIBEIRÃO PRETO","Total_Leads":13,"Total_Vidas":0,"Conv_Rate_pct":0.0,"Score":0.000,"Quartil":"Q4 - Crítico","Rank":194}];
+
+const maxVidas = Math.max(...DATA.map(d=>d.Total_Vidas));
+const maxLeads = Math.max(...DATA.map(d=>d.Total_Leads));
+
+let currentFilter = 'todos';
+let currentSort = 'Rank';
+let sortAsc = true;
+let currentPage = 1;
+const PAGE_SIZE = 25;
+let filtered = [...DATA];
+
+// Populate unidade select
+const unidades = [...new Set(DATA.map(d=>d.UNIDADE))].sort();
+const sel = document.getElementById('unidade');
+unidades.forEach(u => { const o = document.createElement('option'); o.value=u; o.text=u; sel.appendChild(o); });
+
+function setFilter(f) {
+  currentFilter = f;
+  currentPage = 1;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const u = document.getElementById('unidade').value;
+  filtered = DATA.filter(d => {
+    if (currentFilter !== 'todos' && d.Quartil !== currentFilter) return false;
+    if (u && d.UNIDADE !== u) return false;
+    if (q && !d.PROMOTOR.toLowerCase().includes(q) && !d.UNIDADE.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  sortData();
+  renderTable();
+}
+
+function sortBy(col) {
+  if (currentSort === col) sortAsc = !sortAsc;
+  else { currentSort = col; sortAsc = col === 'PROMOTOR' || col === 'UNIDADE' || col === 'Quartil'; }
+  currentPage = 1;
+  document.querySelectorAll('th').forEach(th => { th.classList.remove('sort-active'); });
+  const th = document.getElementById('th-'+col);
+  if (th) th.classList.add('sort-active');
+  sortData(); renderTable();
+}
+
+function sortData() {
+  filtered.sort((a,b) => {
+    let va = a[currentSort], vb = b[currentSort];
+    if (typeof va === 'string') va = va.toLowerCase(), vb = vb.toLowerCase();
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  });
+}
+
+function qClass(q) {
+  if (q.includes('Elite')) return 'q-elite';
+  if (q.includes('Bom')) return 'q-bom';
+  if (q.includes('Desenvolvimento')) return 'q-dev';
+  return 'q-crit';
+}
+
+function rankBadge(r) {
+  if (r===1) return `<span class="rank-badge rank-gold">#1</span>`;
+  if (r===2) return `<span class="rank-badge rank-silver">#2</span>`;
+  if (r===3) return `<span class="rank-badge rank-bronze">#3</span>`;
+  return `<span class="rank-badge rank-normal">#${r}</span>`;
+}
+
+function barHtml(val, max, color) {
+  const pct = Math.min(100, (val/max)*100).toFixed(1);
+  return `<div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="bar-val" style="color:${color}">${val.toLocaleString('pt-BR')}</span></div>`;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('table-body');
+  document.getElementById('count-badge').textContent = `${filtered.length} vendedores`;
+  const start = (currentPage-1)*PAGE_SIZE;
+  const page = filtered.slice(start, start+PAGE_SIZE);
+  tbody.innerHTML = page.map(d => `
+    <tr>
+      <td>${rankBadge(d.Rank)}</td>
+      <td style="font-weight:600;max-width:180px">${d.PROMOTOR}</td>
+      <td style="color:#6b7280;font-size:12px">${d.UNIDADE}</td>
+      <td>${barHtml(d.Total_Vidas, maxVidas, '#1565c0')}</td>
+      <td><span style="font-weight:700;color:${d.Conv_Rate_pct>10?'#166534':d.Conv_Rate_pct>5?'#92400e':'#6b7280'}">${d.Conv_Rate_pct.toFixed(2)}%</span></td>
+      <td>${barHtml(d.Total_Leads, maxLeads, '#6b7280')}</td>
+      <td><span style="font-weight:700;color:#1a2332">${d.Score.toFixed(3)}</span></td>
+      <td><span class="q-chip ${qClass(d.Quartil)}">${d.Quartil}</span></td>
+    </tr>`).join('');
+  renderPag();
+}
+
+function renderPag() {
+  const total = Math.ceil(filtered.length/PAGE_SIZE);
+  const pag = document.getElementById('pag');
+  if (total <= 1) { pag.innerHTML=''; return; }
+  let html = `<span class="pag-info">Página ${currentPage} de ${total}</span>`;
+  html += `<button onclick="goPag(${currentPage-1})" ${currentPage===1?'disabled':''}>← Anterior</button>`;
+  for (let i=1;i<=total;i++) {
+    if (i===1||i===total||Math.abs(i-currentPage)<=1)
+      html += `<button onclick="goPag(${i})" class="${i===currentPage?'active':''}">${i}</button>`;
+    else if (Math.abs(i-currentPage)===2) html += `<span style="padding:0 4px;color:#9ca3af">…</span>`;
+  }
+  html += `<button onclick="goPag(${currentPage+1})" ${currentPage===total?'disabled':''}>Próxima →</button>`;
+  pag.innerHTML = html;
+}
+
+function goPag(p) { currentPage=p; renderTable(); window.scrollTo(0,document.querySelector('table').offsetTop-80); }
+
+applyFilters();
+</script>
+</body>
+</html>
